@@ -1,0 +1,28 @@
+{
+    "menu": [
+        {
+            "id": 1,
+            "name": "ropang"
+        },
+        {
+            "id": 2,
+            "name": "Rendang"
+        },
+        {
+            "id": 3,
+            "name": "gulai"
+        },
+        {
+            "id": 5,
+            "name": "Chips"
+        },
+        {
+            "id": 7,
+            "name": "Boba"
+        },
+        {
+            "id": 8,
+            "name": "candy"
+        }
+    ]
+}
