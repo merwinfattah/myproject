@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from schemas import UserInDB
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt
 from passlib.context import CryptContext
 
 
