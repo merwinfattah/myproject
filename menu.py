@@ -4,31 +4,35 @@ import auth, schemas
 import json
 
 
-with open("menu.json","r") as read_file:
+with open("restodata.json","r") as read_file:
 	data = json.load(read_file)
 
+
+
 auth_handler = auth.AuthHandler()
-users = []
+
 
 
 app = FastAPI()
 
 @app.post('/register', status_code=201)
 def register(auth_details: schemas.AuthDetails):
-    if any(user['username'] == auth_details.username for user in users):
+    if any(user['username'] == auth_details.username for user in data["users"]):
         raise HTTPException(status_code=400, detail='Username is taken')
     hashed_password = auth_handler.get_password_hash(auth_details.password)
-    users.append({
-        'username': auth_details.username,
-        'password': hashed_password    
-    })
+    new_user={'username': auth_details.username,'password': hashed_password}
+    data["users"].append(new_user)
+    read_file.close()
+    with open("menu.json","w") as write_file:
+        	json.dump(data,write_file,indent=4)
+    write_file.close()
     return
 
 
 @app.post('/login')
 def login(auth_details: schemas.AuthDetails):
     user = None
-    for userInDB in users:
+    for userInDB in data["users"]:
         if userInDB['username'] == auth_details.username:
             user = userInDB
             break
