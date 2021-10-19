@@ -26,7 +26,7 @@ def register(auth_details: schemas.AuthDetails):
     with open("restodata.json","w") as write_file:
         	json.dump(data,write_file,indent=4)
     write_file.close()
-    return
+    return {"message" : "You're registered"}
 
 
 @app.post('/login')

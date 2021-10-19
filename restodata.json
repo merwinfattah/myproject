@@ -29,6 +29,10 @@
         {
             "username": "erwin",
             "password": "$2b$12$fNV8Wymou9aEWYw.FU2CT.RXMVoVyEtEcGmmMot0zr30con.T79fG"
+        },
+        {
+            "username": "agung",
+            "password": "$2b$12$0SVbDC0iID5c8t.ryr2VOe42adLFO0d/VfGyl9yPlrfvIa5syHBBu"
         }
     ]
 }
