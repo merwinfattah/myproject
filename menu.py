@@ -1,69 +1,45 @@
-from datetime import timedelta
-from fastapi import FastAPI,HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
-import crud, schemas
+
+from fastapi import FastAPI,HTTPException, Depends
+import auth, schemas
 import json
 
 
 with open("menu.json","r") as read_file:
 	data = json.load(read_file)
 
-fake_users_db = {
-"johndoe": {
-        "username": "johndoe",
-		"password": "123"
-}
-}
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+auth_handler = auth.AuthHandler()
+users = []
 
 
 app = FastAPI()
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, crud.SECRET_KEY, algorithms=[crud.ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = username
-    except JWTError:
-        raise credentials_exception
-    user = crud.get_user(fake_users_db, username=token_data)
-    if user is None:
-        raise credentials_exception
-    return user
+
+@app.post('/register', status_code=201)
+def register(auth_details: schemas.AuthDetails):
+    if any(user['username'] == auth_details.username for user in users):
+        raise HTTPException(status_code=400, detail='Username is taken')
+    hashed_password = auth_handler.get_password_hash(auth_details.password)
+    users.append({
+        'username': auth_details.username,
+        'password': hashed_password    
+    })
+    return
 
 
-@app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = crud.authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = crud.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get("/users/me/")
-async def read_users_me(current_user: schemas.User = Depends(get_current_user)):
-    return current_user
-
+@app.post('/login')
+def login(auth_details: schemas.AuthDetails):
+    user = None
+    for userInDB in users:
+        if userInDB['username'] == auth_details.username:
+            user = userInDB
+            break
+    
+    if (user is None) or (not auth_handler.verify_password(auth_details.password, user['password'])):
+        raise HTTPException(status_code=401, detail='Invalid username and/or password')
+    token = auth_handler.encode_token(user['username'])
+    return { 'token': token }
 
 @app.get('/menu/{item_id}') # Lihat  menu
-async def read_menu(item_id: int):
+async def read_menu(item_id: int, username=Depends(auth_handler.auth_wrapper)):
 	for menu_item in data['menu']:
 		if menu_item['id'] == item_id:
 			return menu_item
@@ -72,7 +48,7 @@ async def read_menu(item_id: int):
 			)
 
 @app.post('/menu') # Tambah menu
-async def post_menu(name:str):
+async def post_menu(name:str, username=Depends(auth_handler.auth_wrapper)):
 	id=1 # inisiasi id untuk menu yang ingin ditambahkan
 	idx=0 # inisiasi indeks penempatan menu dalam list
 	tempListId = [] # inisiasi list sementara
@@ -98,7 +74,7 @@ async def post_menu(name:str):
 
 
 @app.put('/menu/{item_id}') # Ubah menu
-async def update_menu(item_id:int, name:str):
+async def update_menu(item_id:int, name:str, username=Depends(auth_handler.auth_wrapper)):
 	for menu_item in data['menu']:
 		if menu_item['id'] == item_id :
 			menu_item['name'] = name # assign nama menu baru ke nama menu pada id terkait yang telah ada
@@ -110,7 +86,7 @@ async def update_menu(item_id:int, name:str):
 			return{"message":"Menu diubah"}
 
 @app.delete('/menu/{item_id}')  # Hapus Menu
-async def delete_menu(name: str):
+async def delete_menu(name: str, username=Depends(auth_handler.auth_wrapper)):
 	for menu_item in data['menu']:
 		if menu_item['name'] == name :
 			data['menu'].remove(menu_item) # hapus menu dari list menu pada file menu.json
