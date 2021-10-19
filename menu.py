@@ -23,7 +23,7 @@ def register(auth_details: schemas.AuthDetails):
     new_user={'username': auth_details.username,'password': hashed_password}
     data["users"].append(new_user)
     read_file.close()
-    with open("menu.json","w") as write_file:
+    with open("restodata.json","w") as write_file:
         	json.dump(data,write_file,indent=4)
     write_file.close()
     return
@@ -69,7 +69,7 @@ async def post_menu(name:str, username=Depends(auth_handler.auth_wrapper)):
 	menu_baru={'id':id,'name':name}
 	data['menu'].insert(idx,dict(menu_baru)) # menambahkan menu dalam list menu di file menu.json
 	read_file.close()
-	with open("menu.json","w") as write_file:
+	with open("restodata.json","w") as write_file:
         	json.dump(data,write_file,indent=4)
 	write_file.close()
 
@@ -83,7 +83,7 @@ async def update_menu(item_id:int, name:str, username=Depends(auth_handler.auth_
 		if menu_item['id'] == item_id :
 			menu_item['name'] = name # assign nama menu baru ke nama menu pada id terkait yang telah ada
 			read_file.close()
-			with open('menu.json','w') as write_file:
+			with open('restodata.json','w') as write_file:
 				json.dump(data,write_file,indent=4)
 			write_file.close()
 
@@ -95,7 +95,7 @@ async def delete_menu(name: str, username=Depends(auth_handler.auth_wrapper)):
 		if menu_item['name'] == name :
 			data['menu'].remove(menu_item) # hapus menu dari list menu pada file menu.json
 			read_file.close()
-			with open('menu.json','w') as write_file:
+			with open('restodata.json','w') as write_file:
 				json.dump(data,write_file,indent=4)
 			write_file.close()
 
