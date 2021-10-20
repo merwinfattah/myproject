@@ -15,8 +15,13 @@ auth_handler = auth.AuthHandler()
 
 app = FastAPI()
 
+@app.get('/')
+async def read_root():
+	return {"message":"Muhammad Erwin Fattah/ 18219019. tambahkan  /docs pada url untuk endpoints."}
+
+
 @app.post('/register', status_code=201)
-def register(auth_details: schemas.AuthDetails):
+async def register(auth_details: schemas.AuthDetails):
     if any(user['username'] == auth_details.username for user in data["users"]):
         raise HTTPException(status_code=400, detail='Username is taken')
     hashed_password = auth_handler.get_password_hash(auth_details.password)
@@ -30,7 +35,7 @@ def register(auth_details: schemas.AuthDetails):
 
 
 @app.post('/login')
-def login(auth_details: schemas.AuthDetails):
+async def login(auth_details: schemas.AuthDetails):
     user = None
     for userInDB in data["users"]:
         if userInDB['username'] == auth_details.username:
