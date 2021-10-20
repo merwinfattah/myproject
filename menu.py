@@ -42,8 +42,8 @@ def login(auth_details: schemas.AuthDetails):
     token = auth_handler.encode_token(user['username'])
     return { 'token': token }
 
-@app.get('/menu/{item_id}') # Lihat  menu
-async def read_menu(item_id: int, username=Depends(auth_handler.auth_wrapper)):
+@app.get('/menu/{item_id}', dependencies=[Depends(auth_handler.auth_wrapper)]) # Lihat  menu
+async def read_menu(item_id: int):
 	for menu_item in data['menu']:
 		if menu_item['id'] == item_id:
 			return menu_item
@@ -51,8 +51,8 @@ async def read_menu(item_id: int, username=Depends(auth_handler.auth_wrapper)):
 			status_code=404, detail=f'Item not found'
 			)
 
-@app.post('/menu') # Tambah menu
-async def post_menu(name:str, username=Depends(auth_handler.auth_wrapper)):
+@app.post('/menu', dependencies=[Depends(auth_handler.auth_wrapper)]) # Tambah menu
+async def post_menu(name:str):
 	id=1 # inisiasi id untuk menu yang ingin ditambahkan
 	idx=0 # inisiasi indeks penempatan menu dalam list
 	tempListId = [] # inisiasi list sementara
@@ -77,8 +77,8 @@ async def post_menu(name:str, username=Depends(auth_handler.auth_wrapper)):
 
 
 
-@app.put('/menu/{item_id}') # Ubah menu
-async def update_menu(item_id:int, name:str, username=Depends(auth_handler.auth_wrapper)):
+@app.put('/menu/{item_id}' , dependencies=[Depends(auth_handler.auth_wrapper)]) # Ubah menu
+async def update_menu(item_id:int, name:str):
 	for menu_item in data['menu']:
 		if menu_item['id'] == item_id :
 			menu_item['name'] = name # assign nama menu baru ke nama menu pada id terkait yang telah ada
@@ -89,8 +89,8 @@ async def update_menu(item_id:int, name:str, username=Depends(auth_handler.auth_
 
 			return{"message":"Menu diubah"}
 
-@app.delete('/menu/{item_id}')  # Hapus Menu
-async def delete_menu(name: str, username=Depends(auth_handler.auth_wrapper)):
+@app.delete('/menu/{item_id}', dependencies=[Depends(auth_handler.auth_wrapper)])  # Hapus Menu
+async def delete_menu(name: str):
 	for menu_item in data['menu']:
 		if menu_item['name'] == name :
 			data['menu'].remove(menu_item) # hapus menu dari list menu pada file menu.json
